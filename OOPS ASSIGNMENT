@@ -1,93 +1,104 @@
 import java.util.Scanner;
  
 class Board {
-    private char[] b = {'1','2','3','4','5','6','7','8','9'};
+    private char[] cells;
 
-    public void display() {
-        System.out.println("\n "+b[0]+" | "+b[1]+" | "+b[2]);
-        System.out.println("-----------");
-        System.out.println(" "+b[3]+" | "+b[4]+" | "+b[5]);
-        System.out.println("-----------");
-        System.out.println(" "+b[6]+" | "+b[7]+" | "+b[8]);
+    public Board() {
+        cells = new char[]{'1','2','3','4','5','6','7','8','9'};
     }
 
-    public boolean place(int pos, char p) {
-        if(pos < 1 || pos > 9 || b[pos-1]=='X' || b[pos-1]=='O')
-            return false;
+    public void show() {
+        System.out.println();
+        System.out.println(" " + cells[0] + " | " + cells[1] + " | " + cells[2]);
+        System.out.println("-----------");
+        System.out.println(" " + cells[3] + " | " + cells[4] + " | " + cells[5]);
+        System.out.println("-----------");
+        System.out.println(" " + cells[6] + " | " + cells[7] + " | " + cells[8]);
+    }
 
-        b[pos-1] = p;
+    public boolean mark(int pos, char player) {
+        if (pos < 1 || pos > 9) return false;
+        if (cells[pos-1] == 'X' || cells[pos-1] == 'O') return false;
+
+        cells[pos-1] = player;
         return true;
     }
 
-    public boolean checkWin(char p) {
-        return
-        (b[0]==p && b[1]==p && b[2]==p) ||
-        (b[3]==p && b[4]==p && b[5]==p) ||
-        (b[6]==p && b[7]==p && b[8]==p) ||
-        (b[0]==p && b[3]==p && b[6]==p) ||
-        (b[1]==p && b[4]==p && b[7]==p) ||
-        (b[2]==p && b[5]==p && b[8]==p) ||
-        (b[0]==p && b[4]==p && b[8]==p) ||
-        (b[2]==p && b[4]==p && b[6]==p);
+    public boolean isWin(char p) {
+        int[][] win = {
+            {0,1,2},{3,4,5},{6,7,8},
+            {0,3,6},{1,4,7},{2,5,8},
+            {0,4,8},{2,4,6}
+        };
+
+        for(int[] w : win) {
+            if(cells[w[0]]==p && cells[w[1]]==p && cells[w[2]]==p)
+                return true;
+        }
+        return false;
     }
 
-    public boolean full() {
-        for(char c : b)
+    public boolean isFull() {
+        for(char c : cells) {
             if(c!='X' && c!='O') return false;
+        }
         return true;
     }
 }
 
-
  
 class Game {
-    private Board board = new Board();
-    private char player = 'X';
-    private Scanner sc = new Scanner(System.in);
+    private Board board;
+    private char turn;
+    private Scanner scan;
 
-    public void start() {
-        boolean game = true;
+    public Game() {
+        board = new Board();
+        turn = 'X';
+        scan = new Scanner(System.in);
+    }
 
-        while(game) {
-            board.display();
-            System.out.print("\nPlayer " + player + ", choose (1–9): ");
+    public void play() {
+        boolean running = true;
 
-            int pos;
+        while(running) {
+            board.show();
+            System.out.print("\nPlayer " + turn + ", choose a box (1-9): ");
+
+            int choice;
             try {
-                pos = sc.nextInt();
+                choice = scan.nextInt();
             } catch(Exception e) {
-                System.out.println("Invalid Input! Enter only numbers 1–9.");
-                sc.nextLine();
+                System.out.println("Please enter a valid number.");
+                scan.nextLine();
                 continue;
             }
 
-            if(!board.place(pos, player)) {
-                System.out.println("Invalid Move. Try again.");
+            if(!board.mark(choice, turn)) {
+                System.out.println("Invalid move, try again.");
                 continue;
             }
 
-            if(board.checkWin(player)) {
-                board.display();
-                System.out.println("\nPlayer " + player + " Wins!");
-                game = false;
+            if(board.isWin(turn)) {
+                board.show();
+                System.out.println("\nPlayer " + turn + " wins!");
+                running = false;
             }
-            else if(board.full()) {
-                board.display();
+            else if(board.isFull()) {
+                board.show();
                 System.out.println("\nMatch Draw!");
-                game = false;
+                running = false;
             }
             else {
-                player = (player=='X') ? 'O' : 'X';
+                turn = (turn=='X') ? 'O' : 'X';
             }
         }
     }
 }
-
-
  
 public class ExpHand {
     public static void main(String[] args) {
         Game g = new Game();
-        g.start();
+        g.play();
     }
 }
